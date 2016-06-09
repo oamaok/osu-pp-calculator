@@ -1,0 +1,29 @@
+{
+  "name": "osu-pp-calculator",
+  "version": "0.1.3",
+  "description": "calculates performance points for given beatmap",
+  "keywords": [
+    "osu!",
+    "osu",
+    "pp",
+    "calculator",
+    "performance points",
+    "points",
+    "beatmap",
+    "game",
+    "typescript"
+  ],
+  "main": "index.js",
+  "author": "Teemu Pääkkönen <oamaok@gmail.com>",
+  "license": "GPL",
+  "scripts": {
+    "prepublish": "tsc"
+  },
+  "typescript": {
+    "definition": "dist/index.d.ts"
+  },
+  "devDependencies": {
+    "osu-parser": "^0.3.3",
+    "typescript": "^1.8.10"
+  }
+}
