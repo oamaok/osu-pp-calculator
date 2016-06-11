@@ -54,7 +54,7 @@ export default class Beatmap {
     }
 
     this.overallDifficulty *= overallDifficultyMultiplier;
-    let overallDifficultyMillis = OD_0_MS - OD_MS_STEP * this.overallDifficulty;
+    let overallDifficultyMillis = OD_0_MS - Math.ceil(OD_MS_STEP * this.overallDifficulty);
 
     // ar
     let approachRateMultiplier: number = 1;

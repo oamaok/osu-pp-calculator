@@ -25,14 +25,27 @@ namespace PPCalculator {
 
   export function calculate(beatmap: Beatmap, accuracyPercent: number = 100,
     modifiers: number = BeatmapModifier.None, combo: number = -1,
-    misses: number = -1, scoreVersion: number = 1): number {
+    misses: number = 0, scoreVersion: number = 1): number {
 
     beatmap.applyMods(modifiers);
     const diff: BeatmapDifficulty = DifficultyCalculator.calculate(beatmap);
 
     accuracyPercent = Math.max(0.0, Math.min(100.0, accuracyPercent));
-    const c100: number = calc100Count(accuracyPercent / 100.0, beatmap.hitObjects.length, misses);
-    const c300: number = beatmap.hitObjects.length - c100;
+
+    let c300: number = beatmap.hitObjects.length - misses;
+    let c100: = 0;
+
+    let epsilon: number = accuracyCalc(c300, c100, 0, misses) -
+      accuracyCalc(c300 - 1, c100 + 1, 0, misses);
+
+    epsilon *= 50.0;
+
+    let closestAcc: number;
+    while (Math.abs((closestAcc = accuracyCalc(c300, c100, 0, misses) * 100.0
+          - accuracyPercent)) >= epsilon && closestAcc < accuracyPercent) {
+      c300--;
+      c100++;
+    }
 
     return calculateWithCounts(diff.aim, diff.speed, beatmap, modifiers, combo, misses, c300, c100, 0,
       scoreVersion);
@@ -65,7 +78,7 @@ namespace PPCalculator {
     const totalHitsOver2k: number = totalHits / 2000.0;
     const lengthBonus: number = 0.95 +
       0.4 * Math.min(1.0, totalHitsOver2k) +
-      (totalHits > 2000 ? Math.log(totalHitsOver2k) / Math.LN10 * 0.5 : 0.0);
+      (totalHits > 2000 ? (Math.log(totalHitsOver2k) / Math.LN10) * 0.5 : 0.0);
 
     // miss penality (reused in speed pp)
     const missPenalty: number = Math.pow(0.97, misses);
@@ -107,6 +120,7 @@ namespace PPCalculator {
       * comboBreakPenalty
       * (modifiers & BeatmapModifier.Hidden ? 1.18 : 1)
       * (modifiers & BeatmapModifier.Flashlight ? 1.45 * lengthBonus : 1);
+
 
     const speedValue: number = calculateBaseStrain(speed) * lengthBonus
       * missPenalty * comboBreakPenalty * accuracyBonus * overallDifficultyBonus;
