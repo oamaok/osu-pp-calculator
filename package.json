@@ -1,6 +1,6 @@
 {
   "name": "osu-pp-calculator",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "calculates performance points for given beatmap",
   "keywords": [
     "osu!",
