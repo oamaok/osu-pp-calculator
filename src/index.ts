@@ -20,8 +20,8 @@ namespace PPCalculator {
     return accuracy;
   }
 
-  const calc100Count = (accuracy: number, maxHits: number, misses: number) =>
-    Math.round(-3 / 2 * ((accuracy - 1) * maxHits + misses));
+  const calc100Count = (accuracy: number, totalHits: number, misses: number) =>
+    Math.round(-3 / 2 * ((accuracy - 1) * totalHits + misses));
 
   export function calculate(beatmap: Beatmap, accuracyPercent: number = 100,
     modifiers: number = BeatmapModifier.None, combo: number = -1,
@@ -32,20 +32,8 @@ namespace PPCalculator {
 
     accuracyPercent = Math.max(0.0, Math.min(100.0, accuracyPercent));
 
-    let c300: number = beatmap.hitObjects.length - misses;
-    let c100: = 0;
-
-    let epsilon: number = accuracyCalc(c300, c100, 0, misses) -
-      accuracyCalc(c300 - 1, c100 + 1, 0, misses);
-
-    epsilon *= 50.0;
-
-    let closestAcc: number;
-    while (Math.abs((closestAcc = accuracyCalc(c300, c100, 0, misses) * 100.0
-          - accuracyPercent)) >= epsilon && closestAcc < accuracyPercent) {
-      c300--;
-      c100++;
-    }
+    const c100: number = calc100Count(accuracyPercent * 0.01, beatmap.hitObjects.length, misses);
+    const c300: number = beatmap.hitObjects.length - c100 - misses;
 
     return calculateWithCounts(diff.aim, diff.speed, beatmap, modifiers, combo, misses, c300, c100, 0,
       scoreVersion);
