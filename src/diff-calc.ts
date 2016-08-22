@@ -1,5 +1,5 @@
-import Vec2 from './lib/vec2';
-import Beatmap, {HitObject, HitObjectType} from './beatmap';
+import Vec2 from "./lib/vec2";
+import Beatmap, {HitObject, HitObjectType} from "./beatmap";
 
 enum DifficultyType {
   SPEED = 0,
@@ -9,7 +9,7 @@ enum DifficultyType {
 // how much strains decay per interval (if the previous interval's peak
 // strains after applying decay are still higher than the current one's, 
 // they will be used as the peak strains).
-const DECAY_BASE = [0.3, 0.15]; 
+const DECAY_BASE = [0.3, 0.15];
 
 // almost the normalized circle diameter (104px)
 const DIAMETER_APPROX = 90;
@@ -35,12 +35,12 @@ class DiffCalcHitObject {
   public normEnd: Vec2;
 
   constructor(public hitObject: HitObject, radius: any) {
-    //this.hitObject = baseObject;
+    // this.hitObject = baseObject;
     // strains start at 1
     this.strains = [1, 1];
     // positions are normalized on circle radius so that we can calc as
     // if everything was the same circlesize
-    
+
     let scalingFactor = 52.0 / radius;
     // cs buff (based on osuElements, pretty accurate but not 100% sure)
     //
@@ -56,8 +56,8 @@ class DiffCalcHitObject {
     // 4.62962963% aim stars increase
     // 9.039548023% speed stars increase
     if (radius < CS_BUFF_TRESHOLD) {
-      scalingFactor *= 
-        1 + (CS_BUFF_TRESHOLD - radius) * 0.02;
+      scalingFactor *= 1 +
+        Math.min(CS_BUFF_TRESHOLD - radius, 5) / 50;
     }
 
     this.normStart = new Vec2(this.hitObject.position);
@@ -69,28 +69,28 @@ class DiffCalcHitObject {
     // lengths were dropped since osu!tp
     this.normEnd = this.normStart.clone();
   }
-  
+
   calculateStrains (prev: DiffCalcHitObject) {
     this.calculateStrain(prev, DifficultyType.SPEED);
     this.calculateStrain(prev, DifficultyType.AIM);
   }
-  
+
   calculateStrain (prev: DiffCalcHitObject,  diffType: DifficultyType) {
     let res: number = 0;
     let timeElapsed: number = this.hitObject.startTime - prev.hitObject.startTime;
     let decay: number = Math.pow(DECAY_BASE[diffType], timeElapsed / 1000.0);
     let scaling: number = WEIGHT_SCALING[diffType];
 
-    if (this.hitObject.type == HitObjectType.Circle ||
-      this.hitObject.type == HitObjectType.Slider)
+    if (this.hitObject.type === HitObjectType.Circle ||
+      this.hitObject.type === HitObjectType.Slider)
       res = this.spacingWeight(this.normStart.distance(prev.normEnd), diffType) * scaling;
 
     res /= Math.max(timeElapsed, 50);
     this.strains[diffType] = prev.strains[diffType] * decay + res;
   }
-  
+
   spacingWeight (distance,  diffType: DifficultyType) {
-    if (diffType == DifficultyType.AIM)
+    if (diffType === DifficultyType.AIM)
       return Math.pow(distance, 0.99);
 
     if (distance > SINGLETAP_INTERVAL) {
@@ -144,14 +144,14 @@ const calculateDifficulty = (objects: DiffCalcHitObject[], type: DifficultyType)
       if (!prev) {
         maxStrain = 0.0;
       } else {
-        let decay = Math.pow(DECAY_BASE[type], 
+        let decay = Math.pow(DECAY_BASE[type],
           (intervalEnd - prev.hitObject.startTime) / 1000.0);
         maxStrain = prev.strains[type] * decay;
       }
 
       intervalEnd += STRAIN_STEP;
     }
-  
+
     // calculate max strain for this interval
     maxStrain = Math.max(maxStrain, obj.strains[type]);
     prev = obj;
@@ -163,7 +163,7 @@ const calculateDifficulty = (objects: DiffCalcHitObject[], type: DifficultyType)
   highestStrains.sort((a, b) => b - a);
 
   return highestStrains.reduce((prev, curr, idx) => prev + curr * Math.pow(DECAY_WEIGHT, idx), 0);
-}
+};
 
 export interface BeatmapDifficulty {
   aim: number;
@@ -174,7 +174,7 @@ export interface BeatmapDifficulty {
 namespace DifficultyCalculator {
   export function calculate(beatmap: Beatmap): BeatmapDifficulty {
 
-    if (beatmap.mode != 0)
+    if (beatmap.mode !== 0)
       throw new Error("This gamemode is not supported");
 
     const circleRadius: number = (PLAYFIELD_WIDTH / 16) * (1 - 0.7 *
