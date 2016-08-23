@@ -18,7 +18,7 @@ namespace PPCalculator {
         (totalHits * 300.0);
     }
     return accuracy;
-  }
+  };
 
   const calc100Count = (accuracy: number, totalHits: number, misses: number) =>
     Math.round(-3 / 2 * ((accuracy - 1) * totalHits + misses));
@@ -29,11 +29,35 @@ namespace PPCalculator {
 
     beatmap.applyMods(modifiers);
     const diff: BeatmapDifficulty = DifficultyCalculator.calculate(beatmap);
+    const hitObjectCount = beatmap.hitObjects.length;
 
-    accuracyPercent = Math.max(0.0, Math.min(100.0, accuracyPercent));
 
-    const c100: number = calc100Count(accuracyPercent * 0.01, beatmap.hitObjects.length, misses);
-    const c300: number = beatmap.hitObjects.length - c100 - misses;
+    // cap misses to num objects
+    misses = Math.min(hitObjectCount, misses);
+
+    // cap acc to max acc with the given amount of misses
+    const max300 = hitObjectCount - misses;
+
+    accuracyPercent = Math.max(0.0,
+        Math.min(accuracyCalc(max300, 0, 0, misses) * 100.0, accuracyPercent));
+
+    // round acc to the closest amount of 100s or 50s
+    let c50 = 0;
+    let c100 = Math.round(-3.0 * ((accuracyPercent * 0.01 - 1.0) *
+      hitObjectCount + misses) * 0.5);
+
+    if (c100 > hitObjectCount - misses) {
+      // acc lower than all 100s, use 50s
+      c100 = 0;
+      c50 = Math.round(-6.0 * ((accuracyPercent * 0.01 - 1.0) *
+        hitObjectCount + misses) * 0.2);
+
+      c50 = Math.min(max300, c50);
+    } else {
+      c100 = Math.min(max300, c100);
+    }
+
+    let c300 = hitObjectCount - c100 - c50 - misses;
 
     return calculateWithCounts(diff.aim, diff.speed, beatmap, modifiers, combo, misses, c300, c100, 0,
       scoreVersion);
@@ -45,7 +69,7 @@ namespace PPCalculator {
     if (!beatmap.combo)
       throw new Error("Max combo cannot be zero");
 
-    if (scoreVersion != 1 && scoreVersion != 2)
+    if (scoreVersion !== 1 && scoreVersion !== 2)
       throw new Error("This score version does not exist or isn't supported");
 
     let overallDifficulty: number = beatmap.overallDifficulty;
@@ -115,7 +139,7 @@ namespace PPCalculator {
 
     let realAccuracy: number = 0.0; // accuracy calculation changes from scorev1 to scorev2
 
-    if (scoreVersion == 2) {
+    if (scoreVersion === 2) {
       circles = totalHits;
       realAccuracy = accuracy;
     } else {
@@ -138,7 +162,7 @@ namespace PPCalculator {
       * Math.min(1.15, Math.pow(circles / 1000.0, 0.3))
       * (modifiers & BeatmapModifier.Hidden ? 1.02 : 1)
       * (modifiers & BeatmapModifier.Flashlight ? 1.02 : 1);
-     
+
     const finalMultiplier: number = 1.12
       * (modifiers & BeatmapModifier.NoFail ? 0.90 : 1)
       * (modifiers & BeatmapModifier.SpunOut ? 0.95 : 1);
