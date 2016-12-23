@@ -1,6 +1,6 @@
 {
   "name": "osu-pp-calculator",
-  "version": "0.1.7",
+  "version": "2.0.0",
   "description": "calculates performance points for given beatmap",
   "keywords": [
     "osu!",
@@ -10,20 +10,27 @@
     "performance points",
     "points",
     "beatmap",
-    "game",
-    "typescript"
+    "game"
   ],
+  "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix ."
+  },
   "main": "index.js",
   "author": "Teemu Pääkkönen <oamaok@gmail.com>",
   "license": "GPL",
-  "scripts": {
-    "prepublish": "tsc"
+  
+  "dependencies": {
+    "mz": "^2.6.0",
+    "osu-parser-web": "git+https://github.com/oamaok/osu-parser-web.git"
   },
-  "typescript": {
-    "definition": "dist/index.d.ts"
-  },
+
   "devDependencies": {
-    "osu-parser": "^0.3.3",
-    "typescript": "^1.8.10"
+    "babel-eslint": "^7.1.1",
+    "eslint": "^3.12.2",
+    "eslint-config-airbnb": "^13.0.0",
+    "eslint-plugin-import": "^2.2.0",
+    "eslint-plugin-jsx-a11y": "^2.2.3",
+    "eslint-plugin-react": "^6.8.0"
   }
 }
